@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGPA Calculator</title>
+    <script src="angular.js"></script>
+    <script>
+        angular.module('cgpaApp', [])
+        .controller('cgpaController', function($scope) {
+            $scope.semesters = [
+                { courses: [{ code: '', name: '', credits: '', grade: '' }] }
+            ];
+
+            $scope.addCourse = function(semesterIndex) {
+                $scope.semesters[semesterIndex].courses.push({ code: '', name: '', credits: '', grade: '' });
+            };
+
+            $scope.removeCourse = function(semesterIndex, courseIndex) {
+                $scope.semesters[semesterIndex].courses.splice(courseIndex, 1);
+            };
+
+            $scope.addSemester = function() {
+                $scope.semesters.push({ courses: [{ code: '', name: '', credits: '', grade: '' }] });
+            };
+
+            $scope.removeSemester = function(index) {
+                $scope.semesters.splice(index, 1);
+            };
+
+            $scope.calculateCGPA = function() {
+                let totalGradePoints = 0;
+                let totalCredits = 0;
+                let numSemesters = 0;
+                let totalGPA = 0;
+
+                $scope.semesters.forEach(function(semester) {
+                    let semesterGradePoints = 0;
+                    let semesterCredits = 0;
+                    
+                    semester.courses.forEach(function(course) {
+                        let gradePoints = parseFloat(course.grade);
+                        let credits = parseFloat(course.credits);
+                        
+                        if (!isNaN(gradePoints) && !isNaN(credits)) {
+                            semesterGradePoints += gradePoints * credits;
+                            semesterCredits += credits;
+                        }
+                    });
+
+                    if (semesterCredits > 0) {
+                        semester.totalGradePoints = semesterGradePoints;
+                        semester.totalCredits = semesterCredits;
+                        semester.gpa = semesterGradePoints / semesterCredits;
+                        totalGradePoints += semesterGradePoints;
+                        totalCredits += semesterCredits;
+                        numSemesters++;
+                    }
+                });
+
+                if (numSemesters > 0) {
+                    $scope.cgpa = (totalGradePoints / totalCredits).toFixed(2);
+                } else {
+                    $scope.cgpa = 'N/A';
+                }
+            };
+        });
+    </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-image: url('https://assets-global.website-files.com/64fb316551d65e51f3a528e2/6547a568c41d5b8ca48da86d_Screen%20Shot%202023-11-05%20at%209.23.32%20AM.webp'); 
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.9); 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body ng-app="cgpaApp" ng-controller="cgpaController">
+
+    <div class="container">
+        <h2>CGPA Calculator</h2>
+        <div ng-repeat="semester in semesters">
+            <h3>Semester {{ $index + 1 }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Credits</th>
+                        <th>Grade Points</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="course in semester.courses">
+                        <td><input type="text" ng-model="course.code" placeholder="Enter course code"></td>
+                        <td><input type="text" ng-model="course.name" placeholder="Enter course name"></td>
+                        <td><input type="number" ng-model="course.credits" placeholder="Enter credits"></td>
+                        <td><input type="number" ng-model="course.grade" placeholder="Enter grade points"></td>
+                        <td><button ng-click="removeCourse($parent.$index, $index)">Remove</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button ng-click="addCourse($index)">Add Course</button>
+            <div class="result" ng-if="semester.gpa !== undefined">
+                <p>Total Grade Points: {{ semester.totalGradePoints }}</p>
+                <p>Total Credits: {{ semester.totalCredits }}</p>
+                <p>GPA: {{ semester.gpa }}</p>
+            </div>
+        </div>
+        <button ng-click="addSemester()">Add Semester</button>
+        <button ng-click="calculateCGPA()">Calculate CGPA</button>
+        <div class="result" ng-if="cgpa !== undefined">
+            <p>Your CGPA is: {{ cgpa }}</p>
+        </div>
+    </div>
+
+    </body>
+</html>
